@@ -21,6 +21,8 @@ namespace Cambios
 
         private DialogService dialogService;
 
+        private DataService dataService;
+
         #endregion
 
         public Form1()
@@ -29,14 +31,14 @@ namespace Cambios
             networkService = new NetworkService();
             apiService = new ApiService();
             dialogService = new DialogService();
+            dataService = new DataService();
             LoadRates();
         }
 
         private async void LoadRates()
         {
 
-            //Load da API
-            ProgressBar1.Value = 0;
+            
 
             bool load;
 
@@ -60,6 +62,8 @@ namespace Cambios
                 LabelResultado.Text = "Não há ligação á Internet" + Environment.NewLine +
                     "e não foram préviamente carregadas as taxas." + Environment.NewLine +
                     "Tente mais tarde!";
+
+                LabelStatus.Text = "Primeira inicialização deverá ter ligação á Internet";
 
                 return;
             }
@@ -91,18 +95,27 @@ namespace Cambios
             ButtonTroca.Enabled = true;
         }
 
+
+
+
         private void LoadLocalRates()
         {
-            MessageBox.Show("Não está implementado");
+            Rates = dataService.GetData();
         }
 
         private async Task LoadApiRates()
         {
+            //Load da API
             ProgressBar1.Value = 0;
+            
 
             var response = await apiService.GetRates("http://cambios.somee.com","/api/rates");
 
             Rates = (List<Rate>) response.Result;
+
+            dataService.DeleteData();
+
+            dataService.SaveData(Rates);
         }
 
         private void ButtonConverter_Click(object sender, EventArgs e)
